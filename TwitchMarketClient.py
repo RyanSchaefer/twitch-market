@@ -9,13 +9,17 @@ import socket
 SERVER = socket.socket()
 SERVER.connect(('127.0.0.1', 9999))
 print 'connected'
-SERVER.send(dumps({'Start':''}))
+def check_message():
+    payload = loads(SERVER.recv(2048))
+    print payload
+    if 'Whisper' in payload.keys():
+        if match(r':(\w+)!\w+@.+:(.+)\r\n', payload['Whisper']):
+            user = search(r':(\w+)!\w+@.+:(.+)\r\n', payload['Whisper']).group(1)
+            mess = search(r':(\w+)!\w+@.+:(.+)\r\n', payload['Whisper']).group(2)
+            if '!send' in mess:
+                SERVER.send(dumps({'Send': {'Username': user, 'Message': mess}}))
+                return True
+            SERVER.send(dumps({'Pass':''}))
 while 1:
-    PAYLOAD = SERVER.recv(2048)
-    if 'Whisper' in PAYLOAD.keys():
-        if match(r':(\w+)!\w+@.+:(.+)\r\n', PAYLOAD['Whisper']):
-            USER = search(r':(\w+)!\w+@.+:(.+)\r\n', PAYLOAD['Whisper']).group(1)
-            MESS = search(r':(\w+)!\w+@.+:(.+)\r\n', PAYLOAD['Whisper']).group(2)
-            if '!send' in MESS:
-                SERVER.send(dumps({'Send': 'MESS'}))
+    check_message()
         

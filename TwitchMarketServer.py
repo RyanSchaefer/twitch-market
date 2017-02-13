@@ -24,6 +24,8 @@ class TwitchMarketServer(object):
         self.twitch_socket.send('NICK %s\r\n' % ('squid_coin_bot'))
         self.twitch_socket.send('JOIN #jtv\r\n')
         self.twitch_socket.send('CAP REQ :twitch.tv/commands\r\n')
+        print self.twitch_socket.recv(2048)
+        print self.twitch_socket.recv(2048)
     def start_server(self):
         'starts required threads as daemons'
         accept_thread = Thread(target=self.accept_connections)
@@ -57,25 +59,30 @@ class TwitchMarketServer(object):
                 connection.start()
     def process_connections(self, connection, work):
         'figure out what the connections data is saying'
-        payload = loads(connection.recv(2048))
+        connection.send(work)
+        payload = connection.recv(2048)
         print payload
+        payload = loads(payload)
         if 'Start' in payload.keys():
             pass
         elif 'Send' in payload.keys():
             self.whisper_queue.put(payload['Send'])
+        elif 'Pass' in payload.keys():
+            pass
         elif 'End' in payload.keys():
             return False
-        connection.send(work)
         self.queue.put(connection)
     def recieve_whispers(self):
         'connection from server to twitch'
         while 1:
-            self.work_queue.put(dumps({'Whisper': self.twitch_socket.recv(2048)}))
+            work = self.twitch_socket.recv(2048)
+            print work
+            self.work_queue.put(dumps({'Whisper': work}))
     def send_whispers(self):
         'Send a whisper on twitch'
         while 1:
             whisper = self.whisper_queue.get()
-            self.twitch_socket.send('PRIVMSG #jtv :.w %s %s' % \
+            self.twitch_socket.send('PRIVMSG #jtv :.w %s %s\r\n' % \
              (whisper['Username'], whisper['Message']))
             sleep(1.8)
 TwitchMarketServer().start_server()
