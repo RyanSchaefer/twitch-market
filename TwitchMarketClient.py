@@ -8,18 +8,20 @@ from re import match, search
 import socket
 SERVER = socket.socket()
 SERVER.connect(('127.0.0.1', 9999))
-print 'connected'
-def check_message():
-    payload = loads(SERVER.recv(2048))
-    print payload
-    if 'Whisper' in payload.keys():
-        if match(r':(\w+)!\w+@.+:(.+)\r\n', payload['Whisper']):
-            user = search(r':(\w+)!\w+@.+:(.+)\r\n', payload['Whisper']).group(1)
-            mess = search(r':(\w+)!\w+@.+:(.+)\r\n', payload['Whisper']).group(2)
-            if '!send' in mess:
-                SERVER.send(dumps({'Send': {'Username': user, 'Message': mess}}))
-                return True
-            SERVER.send(dumps({'Pass':''}))
+print('connected')
+def send_message(socketobj, message):
+    'Sends a str as bytes through socket'
+    message = message.encode()
+    socketobj.sendall(message)
+def recv_message(socketobj):
+    'Recives a str as bytes though socket'
+    return socketobj.recv(2048).decode()
+send_message(SERVER, dumps({'Start':''}))
 while 1:
-    check_message()
-        
+    PAYLOAD = SERVER.recv(2048)
+    if 'Whisper' in PAYLOAD.keys():
+        if match(r':(\w+)!\w+@.+:(.+)\r\n', PAYLOAD['Whisper']):
+            USER = search(r':(\w+)!\w+@.+:(.+)\r\n', PAYLOAD['Whisper']).group(1)
+            MESS = search(r':(\w+)!\w+@.+:(.+)\r\n', PAYLOAD['Whisper']).group(2)
+            if '!send' in MESS:
+                send_message(SERVER, dumps({'Send': (USER, MESS)}))
