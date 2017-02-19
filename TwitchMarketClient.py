@@ -23,7 +23,3 @@ while 1:
             MESS = search(r':(\w+)!\w+@.+:(.+)\r\n', PAYLOAD['Whisper']).group(2)
             if '!send' in MESS:
                 send_message(SERVER, dumps({'Send': (USER, MESS)}))
-<<<<<<< HEAD
-                
-=======
->>>>>>> 537111db82795cf69f71f7fa077b4ca8e019c872
