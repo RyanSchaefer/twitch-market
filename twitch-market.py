@@ -45,10 +45,10 @@ def connection_handle(work_queue, worker_queue, whisper_queue, database_queue, c
     print(payload)
     if 'Send' in list(payload):
         whisper_queue.put(tuple(payload['Send']))
-    if 'Database' in list(payload):
-        database_queue.put(payload['Database'])
-    else:
-        worker_queue.put(connection)
+    elif 'Database' in list(payload):
+        database_queue.put((connection, payload['Database']))
+        return True
+    worker_queue.put(connection)
 def handout_work(work_queue, worker_queue, whisper_queue):
     'Gives work out to clients for them to process'
     print('Handing out work.')
@@ -64,10 +64,16 @@ def send_whispers(whisper_queue, twitch_socket):
             args = whisper_queue.get()
             send_message(twitch_socket, 'PRIVMSG #jtv :.w %s %s\r\n' % args)
             sleep(1.6)
-def database_handle(database_queue, server_socket):
+def database_handle(database_queue):
     'Handles client requests to the database in sequential order'
-    database = 
-    data = database_queue.get()
+    database = sqlite3.connect('twitch-market.db')
+    curs = database.cursor()
+    while 1:
+        payload = database_queue.get()
+        try:
+            curs.execute(payload['Request'], payload['Args'])
+        except:
+            pass
 def start(work_queue, worker_queue, whisper_queue, database_queue, server_socket, twitch_socket):
     'Start the server'
     multiprocessing.Process(target=accept_connections, \
@@ -79,7 +85,7 @@ def start(work_queue, worker_queue, whisper_queue, database_queue, server_socket
     multiprocessing.Process(target=send_whispers, \
     args=(whisper_queue, twitch_socket)).start()
     multiprocessing.Process(target=database_handle, \
-    args=(database_queue, server_socket)).start()
+    args=(database_queue)).start()
 if __name__ == '__main__':
     MANAGER = multiprocessing.Manager()
     MANAGER.worker_queue = MANAGER.Queue()

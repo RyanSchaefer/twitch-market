@@ -19,7 +19,7 @@ def whisper_handle(user, mess, serversocket):
     'Handle one whisper, makes connections to DB if needed'
     if '!createuser' in mess:
         send_message(serversocket, \
-         dumps({'Database': {'Request': 'CreateUser', 'Username': 'test'}}))
+         dumps({'Database': {'Request': 'INSERT INTO users VALUES (?)', 'Args': (user,)}}))
 def server_handle(serversocket):
     'Handles messages to and from SERVER'
     while 1:
