@@ -6,7 +6,6 @@ import multiprocessing
 import socket
 import re
 import json
-import sqlite3
 from time import sleep
 from BotPass import PASSWORD
 def send_message(socketobj, message):
@@ -38,15 +37,14 @@ def recieve_from_twitch(work_queue, twitch_socket):
             send_message(twitch_socket, 'PONG :tmi.twitch.tv\r\n')
         else:
             work_queue.put({'Whisper': message})
-def connection_handle(work_queue, worker_queue, whisper_queue, database_queue, connection):
+def connection_handle(work_queue, worker_queue, whisper_queue, connection):
     'Handles a back and forth of a connection'
     send_message(connection, json.dumps(work_queue.get()))
     payload = json.loads(recv_message(connection))
     print(payload)
     if 'Send' in list(payload):
         whisper_queue.put(tuple(payload['Send']))
-    elif 'Database' in list(payload):
-        database_queue.put((connection, payload['Database']))
+    elif 'End' in list(payload):
         return True
     worker_queue.put(connection)
 def handout_work(work_queue, worker_queue, whisper_queue):
@@ -64,17 +62,7 @@ def send_whispers(whisper_queue, twitch_socket):
             args = whisper_queue.get()
             send_message(twitch_socket, 'PRIVMSG #jtv :.w %s %s\r\n' % args)
             sleep(1.6)
-def database_handle(database_queue):
-    'Handles client requests to the database in sequential order'
-    database = sqlite3.connect('twitch-market.db')
-    curs = database.cursor()
-    while 1:
-        payload = database_queue.get()
-        try:
-            curs.execute(payload['Request'], payload['Args'])
-        except:
-            pass
-def start(work_queue, worker_queue, whisper_queue, database_queue, server_socket, twitch_socket):
+def start(work_queue, worker_queue, whisper_queue, server_socket, twitch_socket):
     'Start the server'
     multiprocessing.Process(target=accept_connections, \
         args=(server_socket, worker_queue)).start()
@@ -84,14 +72,11 @@ def start(work_queue, worker_queue, whisper_queue, database_queue, server_socket
         args=(work_queue, worker_queue, whisper_queue)).start()
     multiprocessing.Process(target=send_whispers, \
     args=(whisper_queue, twitch_socket)).start()
-    multiprocessing.Process(target=database_handle, \
-    args=(database_queue)).start()
 if __name__ == '__main__':
     MANAGER = multiprocessing.Manager()
     MANAGER.worker_queue = MANAGER.Queue()
     MANAGER.work_queue = MANAGER.Queue()
     MANAGER.whisper_queue = MANAGER.Queue()
-    MANAGER.database_queue = MANAGER.Queue()
     TWITCH = socket.socket()
     TWITCH.connect(('irc.chat.twitch.tv', 6667))
     send_message(TWITCH, 'PASS %s\r\n' % (PASSWORD))
@@ -103,6 +88,6 @@ if __name__ == '__main__':
     SERVER = socket.socket()
     SERVER.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     SERVER.bind(('', 9999))
-    start(MANAGER.work_queue, MANAGER.worker_queue, MANAGER.whisper_queue, MANAGER.database_queue, \
+    start(MANAGER.work_queue, MANAGER.worker_queue, MANAGER.whisper_queue, \
      SERVER, TWITCH)
-
+    input()
