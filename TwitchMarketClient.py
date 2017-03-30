@@ -1,10 +1,10 @@
 '''
 Client processes messages from twitch
 '''
-from json import loads
+from json import loads, dumps
 from re import match, search
 import socket
-import modules
+import commands
 SERVER = socket.socket()
 SERVER.connect(('127.0.0.1', 9999))
 DB = socket.socket()
@@ -19,14 +19,21 @@ def recv_message(socketobj):
     return socketobj.recv(2048).decode()
 def whisper_handle(user, mess, serversocket, database):
     'Handle one whisper, makes connections to DB if needed'
-    modules.commands.handle(database, serversocket, user, mess)
-def server_handle(serversocket):
+    commands.handle(user, mess, serversocket, database)
+def server_handle(serversocket, dbsocket):
     'Handles messages to and from SERVER'
     while 1:
         payload = loads(recv_message(serversocket))
+        print(payload)
         if 'Whisper' in list(payload):
             if match(r':(\w+)!\w+@.+:(.+)\r\n', payload['Whisper']):
                 username = search(r':(\w+)!\w+@.+:(.+)\r\n', payload['Whisper']).group(1)
                 message = search(r':(\w+)!\w+@.+:(.+)\r\n', payload['Whisper']).group(2)
-                whisper_handle(username, message, SERVER, DB)
-server_handle(SERVER)
+                print("%s:%s" % (username, message))
+                whisper_handle(username, message, serversocket, dbsocket)
+                print('Message sent')
+            else:
+                send_message(serversocket, dumps({'Pass': ''}))
+        else:
+            send_message(serversocket, )
+server_handle(SERVER, DB)

@@ -8,7 +8,7 @@ import os
 import socket
 import json
 import re
-import modules
+import database
 def send_message(socketobj, message):
     'Sends a str as bytes through socket'
     message = message.encode()
@@ -31,7 +31,7 @@ def database_handler(db_queue):
     'Handles requests from clients in a linear fashion'
     while 1:
         csocket, payload = db_queue.get()
-        modules.database.handle(csocket, payload)
+        database.handle(csocket, payload)
 def start(serversocket, db_queue):
     'start the server'
     multiprocessing.Process(target=accept_thread, args=(serversocket, db_queue)).start()
