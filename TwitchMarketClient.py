@@ -35,5 +35,5 @@ def server_handle(serversocket, dbsocket):
             else:
                 send_message(serversocket, dumps({'Pass': ''}))
         else:
-            send_message(serversocket, )
+            send_message(serversocket, dumps({'Pass': ''}))
 server_handle(SERVER, DB)
