@@ -1,4 +1,4 @@
-# Index
+
 Welcome to Twitch Market documentation. This page will serve as a guide for myself and others who wish to delve into the code behind Twitch Market. 
 
 ## Index
