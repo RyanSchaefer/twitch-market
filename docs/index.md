@@ -2,17 +2,17 @@
 Welcome to Twitch Market documentation. This page will serve as a guide for myself and others who wish to delve into the code behind Twitch Market. 
 
 ## Index
-###[Commands](https://vsquiddevv.github.io/twitch-market/commands/)
+### [Commands](https://vsquiddevv.github.io/twitch-market/commands/)
 What the user can send to Twitch Market.
-###[Database](https://vsquiddevv.github.io/twitch-market/database/)
+### [Database](https://vsquiddevv.github.io/twitch-market/database/)
 Requests from the clients to the database server.
-###[Server](https://vsquiddevv.github.io/twitch-market/server/)
+### [Server](https://vsquiddevv.github.io/twitch-market/server/)
 The machine that connects to Twitch and hands out messages to clients.
-###[Tests](https://vsquiddevv.github.io/twitch-market/tests/)
+### [Tests](https://vsquiddevv.github.io/twitch-market/tests/)
 Offline testing of Twitch Market
-###[Twitch Connection](https://vsquiddevv.github.io/twitch-market/twitch_communication/)
+### [Twitch Connection](https://vsquiddevv.github.io/twitch-market/twitch_communication/)
 Connection to Twitch.
-###[Users](https://vsquiddevv.github.io/twitch-market/users/)
+### [Users](https://vsquiddevv.github.io/twitch-market/users/)
 How user data is stored.
 
 ## Overview
