@@ -1,7 +1,7 @@
 
 # Server
 The server for Twitch Market handles the connection to Twitch and directs messages to the clients. It has basic command management for commands received from the clients.
-___
+----
 
 **send_message**(*socketobj, message*)
 
